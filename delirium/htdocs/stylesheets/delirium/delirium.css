@@ -1,0 +1,54 @@
+html, body { 
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+  overflow: none;
+}
+
+body {
+  background: #ccc url(/images/delirium/background.png) repeat-x fixed top left;
+  font-family: Trebuchet MS,Helvetica,sans-serif;
+}
+
+div#container {
+  padding: 3px;
+}
+
+table#layout {
+  width: 100%;
+  height: 98%;
+  margin: 0px;
+  padding: 0px;
+  border: none;
+  border-collapse: collapse;
+}
+
+tr#statusrow {
+  height: 1em;
+}
+
+tr#statusrow table {
+  width: 100%;
+  background: #f7f7f7;
+  border: 1px solid #aaa;
+}
+
+tr#statusrow table th {
+  text-align: right;
+  font-weight: normal;
+  width: 1px;
+  padding-right: 10px;
+}
+
+tr#titlerow {
+  height: 1em;
+}
+
+iframe {
+  width: 100%;
+  height: 98%;
+  margin: 0px;
+  padding: 0px;
+  background: #fff;
+  border: 1px solid #aaa;
+}

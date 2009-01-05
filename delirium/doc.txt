@@ -1,0 +1,387 @@
+Delirium Web Testing Framework
+==============================
+
+by Dave Gurnell and Noel Welsh
+{dave, noel} at untyped
+
+Delirium is a web testing framework that integrates with SchemeUnit and the PLT
+web server.
+ 
+Nota Bene: This documentation was converted -- by hand -- from Scribble 
+generated HTML.  There may be some errors from the conversion process.                                                          
+ 
+Introduction
+============
+
+What is Delirium?
+-----------------
+
+Delirium is a tool for testing PLT web application user interfaces. It allows
+programmers to write tests with unprecedented clarity and speed. Delirium is
+built on top of SchemeUnit and the PLT Web Server.
+
+Web interface testing is difficult because you need to control the server and
+the browser at the same time. Delirium gives you the ability to write a single
+SchemeUnit script that does both in a single test script. There is very little
+configuration involved (especially if you are using the Instaweb PLaneT
+package) and you won't need to write a lick of Javascript.
+
+Here is an example test case that tests a login page for a simple web
+application:
+
+  (test-case "Users can log in via the login page"
+    ; The test database starts off empty: we need a new user:
+    (let ([user (make-user #:username "dave" #:password "password")]
+          [now  (current-milliseconds)])
+      ; Save the user to the database:
+      (save! user)
+      ; Open the login page in the browser and wait for the page refresh:
+      (open/wait "/login")
+      ; Fill in the login form in the browser:
+      (type (node/id 'username-field "dave")) ; Type in the username
+      (type (node/id 'password-field "password")) ; Type in the password
+      ; Click 'Submit' and wait for the page to refresh:
+      (click/wait 'submit-button)
+      ; Check the page title is 'Welcome, dave!'
+      (check-equal? (title-ref) "Welcome, dave!")
+      ; Check the login was recorded:
+      (check > (user-last-login user) now)))
+
+This is a standard SchemeUnit test-case being run by the Delirium framework.
+The code used comes from three sources:
+
+    * Delirium tests are defined on the server, so they have access to all the
+      library code used in the web application being tested. The make-user,
+      save! and user-last-login in the example are all imported from the
+      application itself.
+
+    * Delirium is built on top of SchemeUnit, which provides a rich testing
+      framework. The test-case, check and check-equal? forms in the example are
+      standard procedures and macros from SchemeUnit.
+
+    * Delirium provides an API for remote-controlling the web browser. The
+      open/wait, click/wait, node/id, type and title-ref procedures in the
+      example work by remotely executing Javascript code on the browser and
+      returning the results.
+
+Note that, like SchemeUnit tests, Delirium tests are all fully fledged Scheme
+code: you can use all the abstractions that you would expect, including loops,
+conditionals, procedures and macros. Gone are the days of writing tests as an
+HTML table!
+
+How does it work?
+-----------------
+
+Delirium only works on web applications created for the PLT Web Server. You set
+up your application so it can be run in two different modes:
+
+    * Production mode bypasses all of the Delirium setup and simply runs your
+      application.
+
+    * Test mode runs your application with whatever external resources
+      (databases, configuration files, user credentials) you need for testing,
+      and sets up a special test servlet that runs Delirium.
+
+Here is an example start procedure from a test servlet:
+
+  ; start : request -> response
+  (define (start request)
+    ; run-delirium : request schemeunit-test-suite -> response
+    (run-delirium request my-ui-test-suite))
+
+The test servlet is typically mapped to a URL like "http://localhost:8000/
+test". When the servlet is invoked, run-delirium will send a test-page to the
+browser. The test-page contains an iframe, to which all browser API calls like
+open/wait are directed. All the test suite has to do is call open/wait on the
+relevant part of the web application.
+
+Delirium uses continuations to maintain a REPL-style testing loop:
+
+    * Run the test code until a browser API call is made.
+
+    * Send the command to the browser.
+
+    * Wait for a result from the browser.
+
+    * Return the result to the test code and loop.
+
+Commands are sent to the browser as fragments of Javascript. Results are sent
+back in JSON format and are parsed into Scheme data structures.
+
+Using Delirium with Instaweb
+----------------------------
+
+Delirium has been built specifically to work with version 2 of the Instaweb
+PLaneT package. Simply change your Instaweb import statement from:
+
+  (planet "instaweb.ss" ("schematics" "instaweb.plt" 2))
+
+to:
+
+  (planet "instaweb.ss" ("untyped" "delirium.plt" 2))
+
+and change your call to instaweb to a call to instaweb/delirium. This procedure
+takes a few extra arguments that let you configure the test-suite to run and
+choose production mode or test mode. In test mode, instaweb/delirium
+automatically sets up the test servlet and Delirium's Javascript libraries: it
+can even open the test page automatically in your web browser.
+ 
+ 
+Browser API
+===========
+
+The Delirium browser API is provided by the main "delirium.ss" which you can
+require as follows:
+
+  (require (planet "delirium.ss" ("untyped" "delirium.plt" 1)))
+
+The procedures in the browser API are organised into three modules as follows:
+
+    * Selectors access nodes on the current page. Selectors are used in
+      conjunction with commands and accessors to specify the bits of the page
+      with which you wish to interact. For example, node/id selects an HTML
+      element by its ID attribute.
+
+    * Accessors query some aspect of the browser or current page and return it
+      to the server. For example, title-ref retrieves the <title> attribute of
+      the current page.
+
+    * Commands tell the browser to perform an action such as clicking a link or
+      typing in a URL. For example, type enters text into a text-field.
+
+Each module may be required separately:
+
+  (require (planet "selector.ss" ("untyped" "delirium.plt" 1))
+           (planet "accessor.ss" ("untyped" "delirium.plt" 1))
+           (planet "command.ss"  ("untyped" "delirium.plt" 1)))
+
+Javascript representations
+--------------------------
+
+First, a brief aside on Javascript representations. Delirium sends commands to
+the client as Javascript thunks. These thunks are assembled using the AST
+structures from Dave Herman's javascript.plt package.
+
+Delirium takes care of all of this internally. The internal workings are only
+exposed through contracts on the arguments and return values on selectors,
+accessors and commands:
+
+(javascript-expression? item) -> boolean?
+  item : any
+
+(javascript-statement? item) -> boolean?
+  item : any
+
+Selectors
+---------
+
+Selectors create Javascript fragments that, when executed in the browser,
+select arrays of nodes from the page.
+
+On the browser side, all selectors return arrays of nodes: even those that
+cannot select more than one node. This allows selectors to be nested. Most
+selectors can take another selector as an optional first argument, allowing you
+to specify the part(s) of the page you want to search.
+
+Delirium provides the following built-in selectors:
+
+(node/document) -> javascript-expression?
+
+Selects the document element of the current page. Equivalent to selecting the
+document object in Javascript.
+
+(node/id [relative-to] id) -> javascript-expression?
+  relative-to : javascript-expression? = (node/document)
+  id : (U string? symbol?)
+
+Selects an element by its ID attribute. Equivalent to using
+document.getElementById in Javascript.
+
+(node/tag [relative-to] tag-name) -> javascript-expression?
+  relative-to : javascript-expression? = (node/document)
+  tag-name : (U string? symbol?)
+
+Selects elements by their tag name. Equivalent to using
+element.getElementsByTag in Javascript.
+
+(node/xpath [relative-to] xpath) -> javascript-expression?
+  relative-to : javascript-expression? = (node/document)
+  xpath : string?
+
+Selects nodes using an XPath query string.
+
+(node/link/text [relative-to] text) -> javascript-expression?
+  relative-to : javascript-expression? = (node/document)
+  text : string?
+
+Selects links that contain the specified text (doesn't have to be a complete
+match).
+
+Accessors
+---------
+
+Accessors query parts of the current page in the browser and return their
+values as Scheme literals. Delirium defines the following built-in accessors:
+
+(title-ref) -> string?
+
+Returns the value of the <title> element of the current page.
+
+Commands
+--------
+
+Commands tell the browser to perform an action. Examples include entering form
+data or typing in a URL. The following built-in commands are implemented as
+SchemeUnit checks, to provide useful error messages in the case of failure:
+
+(open/wait url [name]) -> void?
+  url : (U string? (-> request? response?))
+  name : string? = #f
+
+Opens the specified url in the browser and waits for the page to refresh. The
+check fails if an exception is thrown in the Javascript code.
+The name argument allows you to name the check.
+
+(click/wait selector [name]) -> void?
+  selector : javascript-expression?
+  name : string? = #f
+
+Clicks the specified element(s) in the browser and waits for the page to
+refresh. The check fails if no elements are selected or an exception is thrown
+in the Javascript code.
+
+The name argument allows you to name the check.
+
+(click selector [name]) -> void?
+  selector : javascript-expression?
+  name : string? = #f
+
+Clicks the specified element(s) in the browser. The check fails if no elements
+are selected or an exception is thrown in the Javascript code.
+
+The name argument allows you to name the check.
+
+(select selector value [name]) -> void?
+  selector : javascript-expression?
+  value : (U string? symbol?)
+  name : string? = #f
+
+Selects a value in the selected <select> element(s). The value argument refers
+to the value attributes on the <option> elements of the select:
+
+  <select name="name">
+    <option value="value1">Text</option>
+    <option value="value2">Text</option>
+    <option value="value3">Text</option>
+  </select>
+
+The check fails if no elements are selected, the value is not found in any
+element, or an exception is thrown in the Javascript code.
+
+The name argument allows you to name the check.
+
+(type selector text [name]) -> void?
+  selector : javascript-expression?
+  text : string?
+  name : string? = #f
+
+Types some text into the selected text field(s) or <textarea>(s). The check
+fails if no elements are selected or an exception is thrown in the Javascript
+code.
+
+The name argument allows you to name the check.
+ 
+
+Delirium API
+============
+
+The Delirium API invokes Delirium. This API is provided by the main file
+"delirium.ss" which you can require as follows:
+
+  (require (planet "delirium.ss" ("untyped" "delirium.plt" 1)))
+
+(run-delirium request test [run-tests]) -> response?
+  request : request?
+  test : schemeunit-test?
+  run-tests : procedure? = test/text-ui
+
+Runs Delirium with the given test (which can be a test suite or test case) in
+response to the given web server request.
+
+The optional run-tests argument specifies a function to actually run the tests.
+It defaults to test/text-ui provided by SchemeUnit.
+
+(schemeunit-test? test) -> boolean
+  test : any
+
+Returns #t if test is either a SchemeUnit test suite or test case, and #f
+otherwise.
+
+Delirium/Instaweb integration
+-----------------------------
+
+The Delirium/Instaweb integration is provided by the file "instaweb.ss" which
+you can require as follows:
+
+  (require (planet "instaweb.ss" ("untyped" "delirium.plt" 1)))
+
+It provides a single function, instaweb/delirium.
+
+(instaweb/delirium    #:port port                            
+                      #:test test                            
+                    [ #:listen-ip listen-ip                  
+                      #:run-tests run-tests                  
+                      #:servlet-path servlet-path            
+                      #:htdocs-path htdocs-path              
+                      #:servlet-namespace servlet-namespace  
+                      run-tests?                             
+                      send-url?                              
+                      test-url                               
+                      new-window?])                          
+ -> void?
+  port : integer
+  test : schemeunit-test?
+  listen-ip : (or/c string? #f) = "127.0.0.1"
+  run-tests : procedure? = test/text-ui
+  servlet-path : (or/c path? string?) = "servlet.ss"
+  htdocs-path : (or/c path? string?) = instaweb-default
+  servlet-namespace : (listof require-spec?) = instaweb-default
+  run-tests? : boolean = #t
+  send-url? : boolean = #t
+  test-url   :   url?
+              =   (string->url(format"http://localhost:~a/test"port))
+  new-window? : boolean = #t
+
+Constructs a servlet that serves requests to test-url with Delirium and all
+other requests with files in htdocs-path or the servlet given in servlet-path
+as per the standard Instaweb rules.
+
+The arguments port, listen-ip, servlet-path, htdocs-path, and servlet-namespace
+have the same meaning as in Instaweb
+
+The argument run-tests has the same meaning as in run-delirium.
+
+The argument test-url is the URL that invokes Delirum. By default it is http://
+localhost:<port>/test.
+
+The argument run-tests? determines if Delirium is actually installed at test-
+url. This provides a simple way to toggle test and production versions of your
+site.
+
+The argument send-url? determines if a web browser is immediatelydirected to
+test-url, and new-window? determines if a new window is opened if a web browser
+is already running.
+
+Practically speaking, to use instaweb/delirium the options you will want to set
+are as follows:
+
+    * Set a value for port and test
+
+    * Set options as for Instaweb
+
+    * Set run-tests? to #f if you're running in production
+
+If you're not running in production a web browser will be automatically opened
+and start running your tests. If you are running in production your web site
+will just run as normal!
+ 
