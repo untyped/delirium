@@ -18,6 +18,10 @@
 (define-runtime-path delirium-htdocs-path
   "htdocs")
 
+; path
+(define-runtime-path delirium-mime-types-path
+  "mime.types")
+
 ; Exceptions -----------------------------------
 
 ; (struct string continuation-marks string any)
@@ -52,6 +56,7 @@
 
 (provide/contract
  [delirium-htdocs-path               path?]
+ [delirium-mime-types-path           path?]
  [struct (exn:fail:browser exn:fail) ([message            string?]
                                       [continuation-marks continuation-mark-set?]
                                       [command            string?]
