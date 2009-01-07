@@ -2,8 +2,8 @@
 
 (require scheme/contract
          scheme/match
-         (only-in srfi/1/list append-map drop-right)
-         (only-in srfi/13/string string-pad-right)
+         (only-in srfi/1 append-map drop-right)
+         (only-in srfi/13 string-pad-right)
          (prefix-in scheme: scheme/pretty)
          web-server/servlet
          (planet untyped/mirrors:1/mirrors)
