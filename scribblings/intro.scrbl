@@ -2,7 +2,7 @@
 
 @(require (file "base.ss")
           (for-label scheme/base
-                     (planet schematics/schemeunit:2/test)))
+                     (planet schematics/schemeunit:3)))
 
 @title{Introduction}
 

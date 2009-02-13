@@ -3,9 +3,19 @@
 (require scheme/contract
          net/url
          web-server/http
-         web-server/managers/manager
          web-server/servlet
          web-server/servlet-env
+         web-server/stuffers
+         web-server/configuration/configuration-table
+         web-server/configuration/responders
+         (prefix-in fsmap: web-server/dispatchers/filesystem-map)
+         (prefix-in files: web-server/dispatchers/dispatch-files)
+         (prefix-in lift: web-server/dispatchers/dispatch-lift)
+         (prefix-in sequence: web-server/dispatchers/dispatch-sequencer)
+         web-server/managers/lru
+         web-server/managers/manager
+         web-server/private/mime-types
+         web-server/private/util
          (planet untyped/unlib:3/keyword)
          "base.ss"
          "accessor.ss"
@@ -15,70 +25,87 @@
 
 ; Procedures -----------------------------------
 
-;  (request -> response) 
-;  schemeunit-test
-;  [#:run-tests?               boolean]
-;  [#:run-tests                (-> schemeunit-test any)]
-;  [#:manager                  (U manager #f)]
-;  [#:port                     natural]
-;  [#:listen-ip                (U string #f)]
-;  [#:servlet-path             string]
-;  [#:servlet-regexp           regexp]
-;  [#:extra-files-paths        (listof path)]
-;  [#:mime-types-path          (U path #f)]
-;  [#:launch-browser?          boolean]
-;  [#:file-not-found-responder (U (request -> response) #f)]
-; ->
-;  void
 (define (serve/delirium
          start
          test
-         #:run-tests?               [run-tests?               #t]
-         #:run-tests                [run-tests                test/text-ui/pause-on-fail]
-         #:manager                  [manager                  #f]
-         #:port                     [port                     8765]
-         #:listen-ip                [listen-ip                "127.0.0.1"]
-         #:servlet-path             [servlet-path             "/"]
-         #:servlet-regexp           [servlet-regexp           #rx"^."]
-         #:extra-files-paths        [extra-files-paths        null]
-         #:mime-types-path          [mime-types-path          #f]
-         #:launch-browser?          [launch-browser?          #t]
-         #:file-not-found-responder [file-not-found-responder #f])
-  ; (listof path)
-  (define all-extra-files-paths
-    `(,delirium-htdocs-path ,@extra-files-paths))
-  
-  (keyword-apply*
-   serve/servlet
-   (if run-tests?
-       (make-delirium-controller start test run-tests)
-       start)
-   `(#:command-line? #t
-                     ,@(if manager
-                           `(#:manager ,manager)
-                           null)
-                     #:port                     ,port
-                     #:listen-ip                ,listen-ip
-                     #:servlet-path             ,(if run-tests? "/test" servlet-path)
-                     #:servlet-regexp           ,servlet-regexp
-                     #:extra-files-paths        ,all-extra-files-paths
-                     ,@(if mime-types-path 
-                           `(#:mime-types-path ,mime-types-path)
-                           null)
-                     #:launch-browser?          ,launch-browser?
-                     ,@(if file-not-found-responder
-                           `(#:file-not-found-responder ,file-not-found-responder)
-                           null))))
+         #:run-tests                 [run-tests                 run-tests/pause]
+         #:port                      [port                      8765]
+         #:listen-ip                 [listen-ip                 "127.0.0.1"]
+         #:servlet-manager           [servlet-manager           (make-default-manager "Servlet")]
+         #:tests-manager             [tests-manager             (make-default-manager "Test")]
+         #:servlet-path              [servlet-path              "/servlets/standalone.ss"]
+         #:tests-path                [tests-path                 "/test"]
+         #:servlet-regexp            [servlet-regexp            (regexp (format "^~a" servlet-path))]
+         #:tests-regexp              [tests-regexp              (regexp (format "^~a" tests-path))]
+         #:server-root-path          [server-root-path          '(lib "web-server/default-web-root")]
+         #:servlet-extra-files-paths [servlet-extra-files-paths null]
+         #:tests-extra-files-paths   [tests-extra-files-paths   (list delirium-htdocs-path)]
+         #:servlet-current-directory [servlet-current-directory (current-directory)]
+         #:tests-current-directory   [tests-current-directory   servlet-current-directory]
+         #:servlet-namespace         [servlet-namespace         null]
+         #:tests-namespace           [tests-namespace           servlet-namespace]
+         #:servlet-stateless?        [servlet-stateless?        #f]
+         #:servlet-stuffer           [servlet-stuffer           default-stuffer]
+         #:mime-types-path           [mime-types-path           (make-mime-types-path server-root-path)]
+         #:launch-browser?           [launch-browser?           #t]
+         #:file-not-found-responder  [file-not-found-responder  (gen-file-not-found-responder
+                                                                 (build-path server-root-path "conf" "not-found.html"))])
+  (serve/launch/wait
+   (sequence:make
+    (dispatch/delirium start
+                       test
+                       #:run-tests                 run-tests
+                       #:servlet-regexp            servlet-regexp
+                       #:tests-regexp              tests-regexp
+                       #:servlet-namespace         servlet-namespace
+                       #:tests-namespace           tests-namespace
+                       #:servlet-current-directory servlet-current-directory
+                       #:tests-current-directory   tests-current-directory
+                       #:servlet-stateless?        servlet-stateless?
+                       #:servlet-stuffer           servlet-stuffer
+                       #:servlet-manager           servlet-manager
+                       #:tests-manager             tests-manager)
+    (map (lambda (extra-files-path)
+           (files:make
+            #:url->path (fsmap:make-url->path extra-files-path)
+            #:path->mime-type (make-path->mime-type mime-types-path)
+            #:indices (list "index.html" "index.htm")))
+         (append tests-extra-files-paths servlet-extra-files-paths))
+    (files:make
+     #:url->path (fsmap:make-url->path (build-path server-root-path "htdocs"))
+     #:path->mime-type (make-path->mime-type mime-types-path)
+     #:indices (list "index.html" "index.htm"))
+    (lift:make file-not-found-responder))))
 
-; (request -> response) test-suite [(test-suite -> any)] -> (request -> response)
-(define (make-delirium-controller servlet-controller test [run-tests test/text-ui/pause-on-fail])
-  (lambda (request)
-    (if (regexp-match #rx"^/test" (url->string (request-uri request)))
-        (run-delirium request test run-tests)
-        (servlet-controller request))))
+(define (dispatch/delirium start
+                           test
+                           #:run-tests                 [run-tests                 run-tests/pause]
+                           #:servlet-regexp            [servlet-regexp            #rx""]
+                           #:tests-regexp              [tests-regexp              #rx"^/test"]
+                           #:servlet-namespace         [servlet-namespace         null]
+                           #:tests-namespace           [tests-namespace           servlet-namespace]
+                           #:servlet-current-directory [servlet-current-directory (current-directory)]
+                           #:tests-current-directory   [tests-current-directory   servlet-current-directory]
+                           #:servlet-stateless?        [servlet-stateless?        #f]
+                           #:servlet-stuffer           [servlet-stuffer           default-stuffer]
+                           #:servlet-manager           [servlet-manager           (make-default-manager "Servlet")]
+                           #:tests-manager             [tests-manager             (make-default-manager "Test")])
+  (sequence:make (dispatch/servlet (lambda (request)
+                                     (run-delirium request test run-tests))
+                                   #:regexp            tests-regexp
+                                   #:namespace         null
+                                   #:current-directory tests-current-directory
+                                   #:manager           tests-manager)
+                 (dispatch/servlet start
+                                   #:regexp            servlet-regexp
+                                   #:namespace         servlet-namespace
+                                   #:current-directory servlet-current-directory
+                                   #:stateless?        servlet-stateless?
+                                   #:stuffer           servlet-stuffer
+                                   #:manager           servlet-manager)))
 
 ; test-suite -> void
-(define (run-delirium request test [run-tests test/text-ui/pause-on-fail])
+(define (run-delirium request test [run-tests run-tests/pause])
   (send-test-page)
   (test/delirium request test run-tests)
   (send/finish (make-stop-response)))
@@ -137,6 +164,21 @@
               (body (p "Sorry! We could not find that file or resource on our server:")
                     (blockquote (tt ,(url->string (request-uri request)))))))))
 
+; string -> manager
+(define (make-default-manager page-type)
+  (make-threshold-LRU-manager
+   (lambda (request)
+     `(html (head (title ,page-type " page Has Expired."))
+            (body (p "Sorry, this page has expired. Please go back."))))
+   (* 64 1024 1024)))
+
+; path -> path
+(define (make-mime-types-path server-root-path)
+  (let ([path (build-path server-root-path "mime.types")])
+    (if (file-exists? path)
+        path
+        (build-path (directory-part default-configuration-table-path) "mime.types"))))
+
 ; Provide statements --------------------------- 
 
 (provide (all-from-out "accessor.ss"
@@ -148,22 +190,29 @@
          javascript?
          javascript-expression?
          javascript-statement?
-         test/text-ui/pause-on-fail)
+         run-tests/pause)
 
 (provide/contract
- [serve/delirium           (->* ((-> request? response?) schemeunit-test?)
-                                (#:run-tests? boolean?
-                                              #:run-tests                (-> any/c any)
-                                              #:manager                  (or/c manager? #f)
-                                              #:port                     natural-number/c
-                                              #:listen-ip                (or/c string? #f)
-                                              #:servlet-path             string?
-                                              #:servlet-regexp           regexp?
-                                              #:extra-files-paths        (listof path?)
-                                              #:mime-types-path          path?
-                                              #:launch-browser?          boolean?
-                                              #:file-not-found-responder (or/c (-> request? response?) false/c))
-                                void?)]
- [make-delirium-controller (->* ((-> request? response?) schemeunit-test?)
-                                ((-> schemeunit-test? any))
-                                (-> request? response?))])
+ [serve/delirium           (->* ((-> request? response/full?) schemeunit-test?)
+                                (#:run-tests procedure?
+                                             #:port                      natural-number/c
+                                             #:listen-ip                 (or/c string? #f)
+                                             #:servlet-manager           manager?
+                                             #:tests-manager             manager?
+                                             #:servlet-path              string?
+                                             #:tests-path                string?
+                                             #:servlet-regexp            regexp?
+                                             #:tests-regexp              regexp?
+                                             #:server-root-path          any/c
+                                             #:servlet-extra-files-paths (listof path?)
+                                             #:tests-extra-files-paths   (listof path?)
+                                             #:servlet-current-directory path?
+                                             #:tests-current-directory   path?
+                                             #:servlet-namespace         any/c
+                                             #:tests-namespace           any/c
+                                             #:servlet-stateless?        boolean?
+                                             #:servlet-stuffer           stuffer?
+                                             #:mime-types-path           path?
+                                             #:launch-browser?           boolean?
+                                             #:file-not-found-responder  (-> request? response/full?))
+                                void?)])

@@ -6,11 +6,11 @@
          scheme/match
          scheme/pretty
          scheme/runtime-path
-         (planet schematics/schemeunit:2/test)
+         (planet schematics/schemeunit:3)
          (planet untyped/unlib:3/debug)
          (planet untyped/unlib:3/exn)
          "json.ss"
-         (only-in "text-ui.ss" test/text-ui))
+         (only-in "text-ui.ss" run-tests))
 
 ; Configuration --------------------------------
 
@@ -49,10 +49,10 @@
                        scheme/contract
                        scheme/match
                        scheme/pretty
-                       (planet schematics/schemeunit:2/test)
+                       (planet schematics/schemeunit:3)
                        (planet untyped/unlib:3/debug)
                        (planet untyped/unlib:3/exn))
-         (rename-out [test/text-ui test/text-ui/pause-on-fail]))
+         (rename-out [run-tests run-tests/pause]))
 
 (provide/contract
  [delirium-htdocs-path               path?]
