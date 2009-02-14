@@ -128,7 +128,7 @@
 ; Provide statements ---------------------------
 
 (provide/contract
- [open/wait        (-> (or/c (-> request? response/full?) string?) void?)]
+ [open/wait        (-> (or/c (-> request? response?) string?) void?)]
  [reload/wait      (-> void?)]
  [back/wait        (-> void?)]
  [forward/wait     (-> void?)]

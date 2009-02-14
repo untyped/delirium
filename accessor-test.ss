@@ -12,7 +12,7 @@
 (define accessor-tests
   (test-suite "accessor.ss"
     
-    #:before
+    '#:before
     (cut open/wait (lambda (request)
                      (send/suspend
                       (lambda (url)

@@ -2,7 +2,7 @@
 
 @(require (file "base.ss")
           (for-label scheme/base
-                     (planet schematics/schemeunit:3)))
+                     (planet schematics/schemeunit:2/test)))
 
 @title[#:style '(toc) #:tag "delirium"]{@bold{Delirium}: Unit Testing for Web User Interfaces}
 

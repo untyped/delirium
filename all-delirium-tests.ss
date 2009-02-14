@@ -11,7 +11,7 @@
 (define all-delirium-tests
   (test-suite "delirium"
     
-    #:after
+    '#:after
     (cut open/wait 
          (lambda (request)
            (send/suspend/dispatch

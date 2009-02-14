@@ -2,7 +2,7 @@
 
 @(require (file "base.ss")
           (for-label scheme/base
-                     (planet schematics/schemeunit:3)))
+                     (planet schematics/schemeunit:2/test)))
 
 @title[#:tag "browser"]{Browser API}
 
@@ -140,7 +140,7 @@ Like @scheme[xpath-path-ref], but returns a list of XPath paths, one for each @s
 
 Commands simulate the actions of a user in the web browser:
 
-@defproc[(open/wait [url (U string? (-> request? response/full?))]) void?]{
+@defproc[(open/wait [url (U string? (-> request? response?))]) void?]{
 Opens the specified @scheme[url] in the browser. Waits for the page to finish reloading before returning.}
 
 @defproc[(reload/wait) void?]{

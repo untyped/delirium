@@ -1,22 +1,21 @@
-#lang scheme/base
+#lang mzscheme
 
-(require scheme/match
+(require (only mzlib/etc opt-lambda)
+         scheme/include
+         scheme/match
          scheme/pretty
-         srfi/13
-         srfi/26
-         (planet schematics/schemeunit:3/base)
-         (planet schematics/schemeunit:3/counter)
-         (planet schematics/schemeunit:3/format)
-         (planet schematics/schemeunit:3/location)
-         (planet schematics/schemeunit:3/result)
-         (planet schematics/schemeunit:3/test)
-         (planet schematics/schemeunit:3/monad)
-         (planet schematics/schemeunit:3/hash-monad)
-         (planet schematics/schemeunit:3/name-collector)
-         (planet schematics/schemeunit:3/text-ui-util))
+         srfi/13/string
+         srfi/26/cut
+         (planet schematics/schemeunit:2/plt/location)
+         (planet schematics/schemeunit:2/plt/test)
+         (planet schematics/schemeunit:2/plt/monad)
+         (planet schematics/schemeunit:2/plt/hash-monad)
+         (planet schematics/schemeunit:2/plt/counter)
+         (planet schematics/schemeunit:2/plt/name-collector)
+         (planet schematics/schemeunit:2/plt/text-ui-util))
 
-(provide run-tests
-         display-context
+(provide test/text-ui
+         display-check-info
          display-exn
          display-summary+return
          display-ticker
@@ -26,9 +25,11 @@
 (define test-prompt
   (make-continuation-prompt-tag 'test-prompt))
 
-;; display-ticker : test-result -> void
-;;
-;; Prints a summary of the test result
+; From schematics/schemeunit.plt/2/8/generic/text-ui.ss:
+; ----- SNIP -----
+; test-result -> void
+;
+; Prints a summary of the test result
 (define (display-ticker result)
   (cond
     ((test-error? result)
@@ -38,43 +39,44 @@
     (else
      (display "."))))
 
-;; display-test-preamble : test-result -> (hash-monad-of void)
-(define (display-test-preamble result)
-  (lambda (hash)
-    (if (test-success? result)
-        hash
-        (begin
-          (display-delimiter)
-          hash))))
-
-;; display-test-postamble : test-result -> (hash-monad-of void)
-(define (display-test-postamble result)
-  (lambda (hash)
-    (if (test-success? result)
-        hash
-        (begin
-          (display-delimiter)
-          hash))))
-
-;; display-result : test-result -> void
+; test-result -> void
 (define (display-result result)
   (cond
     ((test-error? result)
-     (display-test-name (test-result-test-case-name result))
-     (display-error)
+     (newline)
+     (display (test-result-test-case-name result))
+     (display " [ERROR]")
      (newline))
     ((test-failure? result)
-     (display-test-name (test-result-test-case-name result))
-     (display-failure)
+     (newline)
+     (display (test-result-test-case-name result))
+     (display " [FAIL]")
      (newline))
     (else
-     (void))))
+     (display (test-result-test-case-name result))
+     (display " [PASS]")
+     (newline))))
 
-;; strip-redundant-parms : (list-of check-info) -> (list-of check-info)
-;;
-;; Strip any check-params? is there is an
-;; actual/expected check-info in the same stack frame.  A
-;; stack frame is delimited by occurrence of a check-name?
+; ----- SNIP -----
+
+; exn -> void
+;
+; Outputs a printed representation of the exception to
+; the current-output-port
+(define (display-exn exn)
+  (let ([op (open-output-string)])
+    (parameterize ([current-error-port op])
+      ((error-display-handler)
+       (exn-message exn)
+       exn))
+    (display (get-output-string op))
+    (newline)))
+
+; strip-redundant-parms : (listof check-info) -> (listof check-info)
+;
+; Strip any check-params? is there is an
+; actual/expected check-info in the same stack frame.  A
+; stack frame is delimited by occurrence of a check-name?
 (define (strip-redundant-params stack)
   (define (binary-check-this-frame? stack)
     (let loop ([stack stack])
@@ -93,52 +95,48 @@
       [else (cons (car stack) (loop (cdr stack)))])))
 
 
-;; display-context : test-result [(U #t #f)] -> void
-(define (display-context result [verbose? #f])
-  (cond
-    [(test-failure? result)
-     (let* ([exn (test-failure-result result)]
-            [stack (exn:test:check-stack exn)])
-       (for-each
-        (lambda (info)
-          (cond
-            [(check-name? info)
-             (display-check-info info)]
-            [(check-location? info)
-             (display-check-info-name-value
-              'location
-              (trim-current-directory
-               (location->string
-                (check-info-value info)))
-              display)]
-            [(check-params? info)
-             (display-check-info-name-value
-              'params
-              (check-info-value info)
-              (lambda (v) (map pretty-print v)))]
-            [(check-actual? info)
-             (display-check-info-name-value
-              'actual
-              (check-info-value info)
-              pretty-print)]
-            [(check-expected? info)
-             (display-check-info-name-value
-              'expected
-              (check-info-value info)
-              pretty-print)]
-            [(and (check-expression? info)
-                  (not verbose?))
-             (void)]
-            [else
-             (display-check-info info)]))
-        (if verbose?
-            stack
-            (strip-redundant-params stack))))]
-    [(test-error? result)
-     (display-exn (test-error-result result))]
-    [else (void)]))
+; test-result [(U #t #f)] -> void
+(define display-check-info
+  (opt-lambda (result [verbose? #f])
+    (cond [(test-failure? result)
+           (let* ([exn (test-failure-result result)]
+                  [stack (exn:test:check-stack exn)])
+             (for-each
+              (lambda (info)
+                (let ((value (check-info-value info)))
+                  (cond
+                    [(check-name? info)
+                     (printf "name: ~a\n" value)]
+                    [(check-location? info)
+                     (printf "location: ~a\n"
+                             (trim-current-directory
+                              (location->string
+                               (check-info-value info))))]
+                    [(check-params? info)
+                     (unless (null? value)
+                       (display "params:\n")
+                       (map pretty-print value))]
+                    [(check-actual? info)
+                     (display "actual: ")
+                     (pretty-print (check-info-value info))]
+                    [(check-expected? info)
+                     (display "expected: ")
+                     (pretty-print (check-info-value info))]
+                    [(and (check-expression? info)
+                          (not verbose?))
+                     (void)]
+                    [else
+                     (printf "~a: ~v\n"
+                             (check-info-name info)
+                             value)])))
+              (if verbose?
+                  stack
+                  (strip-redundant-params stack))))]
+          [(test-error? result)
+           (display-exn (test-error-result result))]
+          [else (void)])))
 
-;; display-verbose-check-info : test-result -> void
+; test-result -> void
 (define (display-verbose-check-info result)
   (cond
     ((test-failure? result)
@@ -163,29 +161,40 @@
     (else
      (void))))
 
-(define (std-test/text-ui display-context test)
+(define (std-test/text-ui display-check-info test)
   (call-with-continuation-prompt
    (lambda ()
      (let ([result
             (let/ec escape
               (fold-test-results
                (lambda (result seed)
+                 (unless (test-success? result)
+                   ((sequence* (display-test-case-name result)
+                               (lambda (hash)
+                                 (display-result result)
+                                 (display-check-info result)
+                                 hash))
+                    seed)
+                   (printf "Test failed.~n")
+                   (call-with-current-continuation
+                    (lambda (continue)
+                      (escape (list continue seed)))
+                    test-prompt))
                  ((sequence* (update-counter! result)
-                             (display-test-preamble result)
                              (display-test-case-name result)
                              (lambda (hash)
                                (display-result result)
-                               (display-context result)
-                               hash)
-                             (display-test-postamble result))
+                               (display-check-info result)
+                               hash))
                   seed))
-               ((sequence
-                  (put-initial-counter)
-                  (put-initial-name))
+               ((sequence (put-initial-counter)
+                          (put-initial-name))
                 (make-empty-hash))
                test
-               #:fdown (lambda (name seed) ((push-suite-name! name) seed))
-               #:fup (lambda (name kid-seed) ((pop-suite-name!) kid-seed))))])
+               #:fdown (lambda (name seed)
+                         ((push-suite-name! name) seed))
+               #:fup   (lambda (name kid-seed)
+                         ((pop-suite-name!) kid-seed))))])
        (match result
          [(list continue seed)
           (define response
@@ -200,34 +209,28 @@
 
 (define (display-summary+return monad)
   (monad-value
-   ((compose
-     (sequence*
-      (display-counter)
-      (counter->vector))
-     (match-lambda
-       ((vector s f e)
-        (return-hash (+ f e)))))
+   ((compose (sequence* (display-counter) (counter->vector))
+             (match-lambda
+               [(vector s f e)
+                (return-hash (+ f e))]))
     monad)))
 
-;; run-tests : test [(U 'quiet 'normal 'verbose)] -> integer
-(define (run-tests test [mode 'normal])
-  (monad-value
-   ((compose
-     (sequence*
-      (display-counter)
-      (counter->vector))
-     (match-lambda
-       ((vector s f e)
-        (return-hash (+ f e)))))
-    (case mode
-      ((quiet)
-       (fold-test-results
-        (lambda (result seed)
-          ((update-counter! result) seed))
-        ((put-initial-counter)
-         (make-empty-hash))
-        test))
-      ((normal) (std-test/text-ui display-context test))
-      ((verbose) (std-test/text-ui
-                  (cut display-context <> #t)
-                  test))))))
+; test [(U 'quiet 'normal 'verbose)] -> integer
+(define test/text-ui
+  (opt-lambda (test [mode 'normal])
+    (monad-value
+     ((compose (sequence* (display-counter) (counter->vector))
+               (match-lambda
+                 [(vector s f e)
+                  (return-hash (+ f e))]))
+      (case mode
+        [(quiet)   (fold-test-results
+                    (lambda (result seed)
+                      ((update-counter! result) seed))
+                    ((put-initial-counter)
+                     (make-empty-hash))
+                    test)]
+        [(normal)  (std-test/text-ui display-check-info test)]
+        [(verbose) (std-test/text-ui
+                    (cut display-check-info <> #t)
+                    test)])))))
