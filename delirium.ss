@@ -149,7 +149,7 @@
          test/text-ui/pause-on-fail)
 
 (provide/contract
- [serve/delirium           (->* ((-> request? web-server-response/c) schemeunit-test?)
+ [serve/delirium           (->* ((-> request? response/full?) schemeunit-test?)
                                 (#:run-tests? boolean?
                                               #:run-tests                (-> any/c any)
                                               #:manager                  (or/c manager? #f)
@@ -160,8 +160,8 @@
                                               #:extra-files-paths        (listof path?)
                                               #:mime-types-path          path?
                                               #:launch-browser?          boolean?
-                                              #:file-not-found-responder (or/c (-> request? web-server-response/c) false/c))
+                                              #:file-not-found-responder (or/c (-> request? response/full?) false/c))
                                 void?)]
- [make-delirium-controller (->* ((-> request? web-server-response/c) schemeunit-test?)
+ [make-delirium-controller (->* ((-> request? response/full?) schemeunit-test?)
                                 ((-> schemeunit-test? any))
-                                (-> request? web-server-response/c))])
+                                (-> request? response/full?))])

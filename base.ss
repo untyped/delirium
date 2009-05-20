@@ -16,7 +16,6 @@
          srfi/26
          (json-in json)
          (mirrors-in main)
-         (only-in (mirrors-in plain/util) web-server-response/c)
          (schemeunit-in test)
          (unlib-in debug exn)
          (only-in "text-ui.ss" test/text-ui))
@@ -59,7 +58,6 @@
                        scheme/match
                        scheme/pretty
                        srfi/26)
-         (mirrors-out main plain/util)
          (schemeunit-out test)
          (unlib-out debug exn)
          (rename-out [test/text-ui test/text-ui/pause-on-fail]))

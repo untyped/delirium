@@ -130,7 +130,7 @@
 (provide (mirrors-out)
          ; From Web Server:
          request?
-         web-server-response/c
+         response/full?
          send/suspend/dispatch
          ; From Schemeunit:
          schemeunit-test?
@@ -140,8 +140,8 @@
          javascript-statement?)
 
 (provide/contract
- [test/delirium          (-> request? schemeunit-test? (-> schemeunit-test? any) web-server-response/c)]
+ [test/delirium          (-> request? schemeunit-test? (-> schemeunit-test? any) response/full?)]
  [current-delirium-delay (parameter/c natural-number/c)]
  [respond/expr           (-> (-> procedure? javascript-expression?) any)]
  [respond/stmt           (-> (-> procedure? javascript?) any)]
- [make-stop-response     (-> web-server-response/c)])
+ [make-stop-response     (-> response/full?)])
