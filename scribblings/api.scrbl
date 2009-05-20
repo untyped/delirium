@@ -1,8 +1,10 @@
 #lang scribble/doc
 
-@(require (file "base.ss")
+@(require "base.ss"
           (for-label scheme/base
-                     (planet schematics/schemeunit:2/test)))
+                     "base.ss"))
+
+@(require (schematics-in test))
 
 @title[#:tag "browser"]{Browser API}
 

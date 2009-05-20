@@ -1,13 +1,11 @@
 #lang scheme/base
 
-(require scheme/contract
-         net/url
-         web-server/http
-         web-server/managers/manager
+(require "base.ss")
+
+(require web-server/managers/manager
          web-server/servlet
          web-server/servlet-env
-         (planet untyped/unlib:3/keyword)
-         "base.ss"
+         (unlib-in keyword)
          "accessor.ss"
          "command.ss"
          "core.ss"
@@ -151,7 +149,7 @@
          test/text-ui/pause-on-fail)
 
 (provide/contract
- [serve/delirium           (->* ((-> request? response?) schemeunit-test?)
+ [serve/delirium           (->* ((-> request? web-server-response/c) schemeunit-test?)
                                 (#:run-tests? boolean?
                                               #:run-tests                (-> any/c any)
                                               #:manager                  (or/c manager? #f)
@@ -162,8 +160,8 @@
                                               #:extra-files-paths        (listof path?)
                                               #:mime-types-path          path?
                                               #:launch-browser?          boolean?
-                                              #:file-not-found-responder (or/c (-> request? response?) false/c))
+                                              #:file-not-found-responder (or/c (-> request? web-server-response/c) false/c))
                                 void?)]
- [make-delirium-controller (->* ((-> request? response?) schemeunit-test?)
+ [make-delirium-controller (->* ((-> request? web-server-response/c) schemeunit-test?)
                                 ((-> schemeunit-test? any))
-                                (-> request? response?))])
+                                (-> request? web-server-response/c))])

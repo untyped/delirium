@@ -1,7 +1,8 @@
 #lang scheme/base
 
-(require scheme/contract
-         (prefix-in json: (planet dherman/json:1/json)))
+(require "base.ss")
+
+(require (prefix-in json: (json-in json)))
 
 ; Procedures -------------------------------------
 

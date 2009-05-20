@@ -1,9 +1,8 @@
 #lang scheme/base
 
-(require scheme/contract
-         srfi/26
-         (planet untyped/unlib:3/number)
-         "base.ss"
+(require "base.ss")
+
+(require (unlib-in number)
          "core.ss")
 
 ; Selectors ------------------------------------

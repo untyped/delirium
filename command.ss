@@ -1,10 +1,8 @@
 #lang scheme/base
 
-(require scheme/contract
-         srfi/26/cut)
+(require "base.ss")
 
-(require "base.ss"
-         "core.ss")
+(require "core.ss")
 
 ; Commands -------------------------------------
 
@@ -128,7 +126,7 @@
 ; Provide statements ---------------------------
 
 (provide/contract
- [open/wait        (-> (or/c (-> request? response?) string?) void?)]
+ [open/wait        (-> (or/c (-> request? web-server-response/c) string?) void?)]
  [reload/wait      (-> void?)]
  [back/wait        (-> void?)]
  [forward/wait     (-> void?)]

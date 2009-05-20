@@ -1,15 +1,24 @@
 #lang scheme/base
 
+(require (planet untyped/unlib:3/require))
+
+(define-library-aliases schemeunit (planet schematics/schemeunit:2) #:provide)
+(define-library-aliases json       (planet dherman/json:1)          #:provide)
+(define-library-aliases mirrors    (planet untyped/mirrors:1)       #:provide)
+(define-library-aliases unlib      (planet untyped/unlib:3)         #:provide)
+
 (require (for-syntax scheme/base)
          net/url
          scheme/contract
          scheme/match
          scheme/pretty
          scheme/runtime-path
-         (planet schematics/schemeunit:2/test)
-         (planet untyped/unlib:3/debug)
-         (planet untyped/unlib:3/exn)
-         "json.ss"
+         srfi/26
+         (json-in json)
+         (mirrors-in main)
+         (only-in (mirrors-in plain/util) web-server-response/c)
+         (schemeunit-in test)
+         (unlib-in debug exn)
          (only-in "text-ui.ss" test/text-ui))
 
 ; Configuration --------------------------------
@@ -49,9 +58,10 @@
                        scheme/contract
                        scheme/match
                        scheme/pretty
-                       (planet schematics/schemeunit:2/test)
-                       (planet untyped/unlib:3/debug)
-                       (planet untyped/unlib:3/exn))
+                       srfi/26)
+         (mirrors-out main plain/util)
+         (schemeunit-out test)
+         (unlib-out debug exn)
          (rename-out [test/text-ui test/text-ui/pause-on-fail]))
 
 (provide/contract

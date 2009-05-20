@@ -1,13 +1,12 @@
 #lang scheme/base
 
-(require scheme/contract
-         scheme/match
-         (only-in srfi/1 append-map drop-right)
+(require "base.ss")
+
+(require (only-in srfi/1 append-map drop-right)
          (only-in srfi/13 string-pad-right)
          (prefix-in scheme: scheme/pretty)
          web-server/servlet
-         (planet untyped/mirrors:1/mirrors)
-         "base.ss"
+         (mirrors-in)
          "json.ss")
 
 ; In the following type definitions:
@@ -128,10 +127,10 @@
 
 ; Provide statements --------------------------- 
 
-(provide (all-from-out (planet untyped/mirrors:1/mirrors))
+(provide (mirrors-out)
          ; From Web Server:
          request?
-         response?
+         web-server-response/c
          send/suspend/dispatch
          ; From Schemeunit:
          schemeunit-test?
@@ -141,8 +140,8 @@
          javascript-statement?)
 
 (provide/contract
- [test/delirium          (-> request? schemeunit-test? (-> schemeunit-test? any) response?)]
+ [test/delirium          (-> request? schemeunit-test? (-> schemeunit-test? any) web-server-response/c)]
  [current-delirium-delay (parameter/c natural-number/c)]
  [respond/expr           (-> (-> procedure? javascript-expression?) any)]
  [respond/stmt           (-> (-> procedure? javascript?) any)]
- [make-stop-response     (-> response?)])
+ [make-stop-response     (-> web-server-response/c)])
