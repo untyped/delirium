@@ -4,7 +4,7 @@
 
 (define-library-aliases schemeunit (planet schematics/schemeunit:2) #:provide)
 (define-library-aliases json       (planet dherman/json:1)          #:provide)
-(define-library-aliases mirrors    (planet untyped/mirrors:1)       #:provide)
+(define-library-aliases mirrors    (planet untyped/mirrors:2)       #:provide)
 (define-library-aliases unlib      (planet untyped/unlib:3)         #:provide)
 
 (require (for-syntax scheme/base)
