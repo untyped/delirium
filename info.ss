@@ -7,10 +7,7 @@
 
 (define release-notes
   '((p "Changes:")
-    (ul (li "updated to PLT 4.1.3;")
-        (li "removed Instaweb and Instaservlet compatibility;")
-        (li "added " (tt "serve/delirium") " top level procedure;")
-        (li "added " (tt "main.ss") " for shorter require statements."))))
+    (ul (li "removed Prototype.js dependency;"))))
 
 (define primary-file "main.ss")
 

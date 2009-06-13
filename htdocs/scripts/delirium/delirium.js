@@ -21,38 +21,40 @@ Delirium.getDocument = function () {
 // string [ json-marshallable ] -> void
 Delirium.sendResult = function (url, data) {
   // Delirium.log("sendResult", url, data);
-  
-  var params = (typeof(data) == "undefined")
-      ? { type: "result" }
-      : { type: "result", json: Delirium.toJSON(data) };
 
-  // Delirium.log("sendResult", url, data, params);
-
-  new Ajax.Request(url, {
-    method:      "post",
-    contentType: "text/json",
-    parameters:  params });
+  $.ajax({
+    url        : url,
+    type       : "post",
+    data       : (typeof(data) == "undefined")
+                   ? { type: "result" }
+                   : { type: "result", json: Delirium.toJSON(data) },
+    dataType   : "text/json",
+    success    : function (responseText) {
+                   eval(responseText);
+                 }});
 };
 
 // string [ exn ] -> void
 Delirium.sendExn = function (url, exn) {
-  var params = typeof(exn) == "undefined"
-    ? { type: "exn" }
-    : { type: "exn", json: Delirium.toJSON(exn) };
+  // Delirium.log("sendExn", url, exn);
 
-  // Delirium.log("sendExn", url, exn, params);
-
-  new Ajax.Request(url, {
-    method:      "post",
-    contentType: "text/json",
-    parameters:  params });
+  $.ajax({
+    url        : url,
+    type       : "post",
+    data       : (typeof(exn) == "undefined")
+                   ? { type: "exn" }
+                   : { type: "exn", json: Delirium.toJSON(exn) },
+    dataType   : "text/json",
+    success    : function (responseText) {
+                   eval(responseText);
+                 }});
 };
 
 // Start and stop commands -----------------------
 
 // string string -> void  
 Delirium.start = function (targetId, kUrl) {
-  Delirium.target = $(targetId);
+  Delirium.target = $("#" + targetId).get(0);
   Delirium.sendResult(kUrl);
 };
 
@@ -67,7 +69,7 @@ Delirium.stop = function () {
 Delirium.history = {};
 
 // arrayOf(string)
-Delirium.history.locations = $A();
+Delirium.history.locations = [];
 
 // integer
 //
@@ -194,9 +196,7 @@ Delirium.evaluateXPath = (function () {
 // any -> string
 Delirium.toJSON = function (data) {
   try {
-    return Object.isArray(data)
-      ? $A(data).toJSON()
-      : Object.toJSON(data);
+    return $.toJSON(data);
   } catch (exn) {
     Delirium.log("toJSON", "Could not serialize", data);
     return "\"Could not convert object to JSON.\"";
@@ -241,7 +241,7 @@ Delirium.registerWaitHook = function (fn) {
     fn();
   };
   
-  Event.observe(Delirium.target, "load", Delirium.loadHooks[fn]);
+  $(Delirium.target).bind("load", Delirium.loadHooks[fn]);
   
   if (typeof(Delirium.getWindow().DeliriumClient) == "object") {
     Delirium.getWindow().DeliriumClient.registerWaitHook(
@@ -263,7 +263,7 @@ Delirium.unregisterWaitHook = function (fn) {
       Delirium.log);
   }
 
-  Event.stopObserving(Delirium.target, "load", Delirium.loadHooks[fn]);
+  $(Delirium.target).unbind("load", Delirium.loadHooks[fn]);
   
   delete Delirium.loadHooks[fn];
 };

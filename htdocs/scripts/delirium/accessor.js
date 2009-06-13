@@ -12,7 +12,7 @@ Delirium.api.getInnerHTML = function (elems) {
 
 // arrayOf(node) -> arrayOf(string)
 Delirium.api.getAllInnerHTML = function (elems) {
-  var ans = Delirium.map(function (elem) { return elem.innerHTML; }, elems);
+  var ans = $.map(elems, function (elem) { return elem.innerHTML; });
   return ans;
 };
 
@@ -28,7 +28,7 @@ Delirium.api.getJQueryReference = function (elems) {
 Delirium.api.getAllJQueryReferences = function (elems) {
   // Delirium.log("getAllJQueryReferences", elems);
 
-  var ans = Delirium.map(function (elem) {
+  var ans = $.map(elems, function (elem) {
     var document = Delirium.getDocument();
     var curr = elem;
     var accum = "";
@@ -70,7 +70,7 @@ Delirium.api.getAllJQueryReferences = function (elems) {
     } while (curr);
       
     return accum.substring(0, accum.length - 3);
-  }, elems);
+  });
 
   return ans;
 };
@@ -87,7 +87,7 @@ Delirium.api.getXPathReference = function (elems) {
 Delirium.api.getAllXPathReferences = function (elems) {
   // Delirium.log("getAllXPathReferences", elems);
 
-  var ans = Delirium.map(function (elem) {
+  var ans = $.map(elems, function (elem) {
     var document = Delirium.getDocument();
     var curr = elem;
     var accum = "";
@@ -129,7 +129,7 @@ Delirium.api.getAllXPathReferences = function (elems) {
     } while (curr);
       
     return accum;
-  }, elems);
+  });
 
   return ans;
 };

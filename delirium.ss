@@ -90,9 +90,8 @@
      (make-html-response
       (xml ;,xhtml-1.0-transitional-doctype
        (html (@ [xmlns "http://www.w3.org/1999/xhtml"])
-             (head (script (@ [type "text/javascript"] [src "/scripts/prototype/prototype.js"]))
-                   (script (@ [type "text/javascript"] [src "/scripts/jquery/jquery.js"]))
-                   (script (@ [type "text/javascript"]) ,(js (!dot jQuery (noConflict))))
+             (head (script (@ [type "text/javascript"] [src "/scripts/jquery/jquery-1.3.2.min.js"]))
+                   (script (@ [type "text/javascript"] [src "/scripts/jquery/jquery.json-1.3.min.js"]))
                    ;(!raw "\n<!--[if IE]>\n")
                    ;(script (@ [type "text/javascript"] [src "/scripts/firebug/firebug-lite.js"]))
                    ;(!raw "\n<![endif]-->\n")
@@ -103,14 +102,9 @@
                    (script (@ [type "text/javascript"] [src "/scripts/delirium/selector.js"]))
                    (script (@ [type "text/javascript"])
                            (!raw "\n// <![CDATA[\n")
-                           (!raw ,(js (!dot Event (observe window
-                                                           "load"
-                                                           (function ()
-                                                             (!dot Delirium
-                                                                   (start "target"
-                                                                          ,(embed-url (lambda (request) request)))))))))
+                           (!raw ,(js ($ (function () (!dot Delirium (start "target" ,(embed-url (lambda (request) request))))))))
                            (!raw "\n// ]]>\n"))
-                   (link (@ [rel "stylesheet"] [type "text/css"] [href "/style/delirium/screen.css"])))
+                   (link (@ [rel "stylesheet"] [type "text/css"] [href "/styles/delirium/screen.css"])))
              (body (div (@ [id "container"])
                         (table (@ [id "layout"] [cellspacing "0"] [cellpadding "0"])
                                (tbody (tr (@ [id "statusrow"])

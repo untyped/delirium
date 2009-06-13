@@ -9,48 +9,19 @@
 
 // findDocument : -> arrayOf(node)
 Delirium.api.findDocument = function () {
-  return [ Delirium.getDocument() ];
+  return $(Delirium.getDocument());
 };
 
 // findById : arrayOf(node) string -> arrayOf(node)
 Delirium.api.findById = function (roots, id) {
   // Delirium.log("findById", roots, id);
-
-  var ans;
-
-  if (roots.length == 0) {
-    ans = [];
-  } else if (roots.length == 1 && roots[0] == Delirium.getDocument()) {
-    var ansItem = roots[0].getElementById(id);
-    ans = ansItem ? [ ansItem ] : [];
-  } else {
-    ans = Delirium.api.findByJQuery(roots, "#" + id);
-  }
-  
-  // Delirium.log("findById", ans);
-  
-  return ans;
+  return $(roots).find("#" + id);
 };
 
 // findByTag : arrayOf(node) string -> arrayOf(node)
 Delirium.api.findByTag = function (roots, tag) {
   // Delirium.log("findByTag", roots, tag);
-  
-  var ans = Delirium.fold(
-    function (root, accum) {
-      var found = $A(root.getElementsByTagName(tag));
-      if (found.length > 0) {
-        return accum.concat(found);
-      } else {
-        return accum;
-      }
-    },
-    [],
-    roots);
-    
-  // Delirium.log("findByTag", ans);
-    
-  return ans;
+  return $(roots).find(tag);
 };
 
 // arrayOf(node) string -> arrayOf(node)
@@ -81,24 +52,13 @@ Delirium.api.findByXPath = function (roots, xpath) {
     
   // Delirium.log("findByXPath", ans);
   
-  return ans;
+  return $(ans);
 };
 
 // arrayOf(node) string -> arrayOf(node)
 Delirium.api.findByJQuery = function (roots, query) {
   // Delirium.log("findByJQuery", roots, query);
-
-  var ans = Delirium.fold(
-    function (root, accum) {
-      // Delirium.log("Stuff" + jQuery(query, root).get());
-      return accum.concat(jQuery(query, root).get());
-    },
-    [],
-    roots);
-    
-  // Delirium.log("findByJQuery", ans);
-  
-  return ans;
+  return $(roots).find(query);
 };
 
 // arrayOf(element) integer integer -> arrayOf(element)
@@ -127,12 +87,12 @@ Delirium.api.findTableCell = function (roots, x, y) {
     }
   };
   
-  return Delirium.map(handleRoot, roots);
+  return $.map(roots, handleRoot);
 };
 
 // arrayOf(element) -> arrayOf(element)
 Delirium.api.findParent = function (roots) {
-    return Delirium.map(function (root) {
+    return $.map(roots, function (root) {
         return root.parentNode;    
-    }, roots);
+    });
 };

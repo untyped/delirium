@@ -24,8 +24,8 @@ Delirium.api.backAndWait = function (kUrl) {
     var url = Delirium.history.back();
     
     Delirium.registerWaitHook(function() {
-      $("currenttitle").innerHTML = Delirium.getDocument().title;
-      $("currenturl").innerHTML = Delirium.history.current();
+      $("#currenttitle").html(Delirium.getDocument().title);
+      $("#currenturl").html(Delirium.history.current());
       Delirium.sendResult(kUrl);
     });
   
@@ -70,7 +70,7 @@ Delirium.api.clickAll = function (nodes) {
   // Delirium.log("click", nodes);
 
   if (nodes.length && nodes.length > 0) {
-    Delirium.forEach(function (node) { 
+    $.each(nodes, function (index, node) { 
       // Delirium.log("clickAll", "curr", node);
     
       var clickable = false;
@@ -102,7 +102,7 @@ Delirium.api.clickAll = function (nodes) {
       if (!clickable) {
         throw [ [ "clickAll", nodes ], "Unclickable node", node ];
       }
-    }, nodes);
+    });
   } else {
     throw [ [ "clickAll", nodes ], "Bad or empty array of selected nodes" ];
   }
@@ -183,7 +183,7 @@ Delirium.api.changeAll = function (nodes, value) {
     // it can rely on the wait hook to respond to the server.
     var fired = false;
   
-    Delirium.forEach(function (node) {
+    $.each(nodes, function (index, node) {
       var exists = false;
       
       if (node && node.fireEvent) {
@@ -205,7 +205,7 @@ Delirium.api.changeAll = function (nodes, value) {
       if (!exists) {
         throw [ [ "changeAll", nodes, value ], "Value not found in ", node ];
       }
-    }, nodes);
+    });
     
     return fired;
   } else {
