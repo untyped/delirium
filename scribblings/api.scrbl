@@ -142,7 +142,7 @@ Like @scheme[xpath-path-ref], but returns a list of XPath paths, one for each @s
 
 Commands simulate the actions of a user in the web browser:
 
-@defproc[(open/wait [url (U string? (-> request? response?))]) void?]{
+@defproc[(open/wait [url (U string? (-> request? response/c))]) void?]{
 Opens the specified @scheme[url] in the browser. Waits for the page to finish reloading before returning.}
 
 @defproc[(reload/wait) void?]{

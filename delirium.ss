@@ -9,7 +9,8 @@
          "accessor.ss"
          "command.ss"
          "core.ss"
-         "selector.ss")
+         "selector.ss"
+         "text-ui.ss")
 
 ; Procedures -----------------------------------
 
@@ -32,7 +33,7 @@
          start
          test
          #:run-tests?               [run-tests?               #t]
-         #:run-tests                [run-tests                test/text-ui/pause-on-fail]
+         #:run-tests                [run-tests                run-tests/pause]
          #:manager                  [manager                  #f]
          #:port                     [port                     8765]
          #:listen-ip                [listen-ip                "127.0.0.1"]
@@ -69,14 +70,14 @@
                            null))))
 
 ; (request -> response) test-suite [(test-suite -> any)] -> (request -> response)
-(define (make-delirium-controller servlet-controller test [run-tests test/text-ui/pause-on-fail])
+(define (make-delirium-controller servlet-controller test [run-tests run-tests/pause])
   (lambda (request)
     (if (regexp-match #rx"^/test" (url->string (request-uri request)))
         (run-delirium request test run-tests)
         (servlet-controller request))))
 
 ; test-suite -> void
-(define (run-delirium request test [run-tests test/text-ui/pause-on-fail])
+(define (run-delirium request test [run-tests run-tests/pause])
   (send-test-page)
   (test/delirium request test run-tests)
   (send/finish (make-stop-response)))
@@ -140,7 +141,7 @@
          javascript?
          javascript-expression?
          javascript-statement?
-         test/text-ui/pause-on-fail)
+         run-tests/pause)
 
 (provide/contract
  [serve/delirium           (->* ((-> request? response/full?) schemeunit-test?)

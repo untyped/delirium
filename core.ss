@@ -17,17 +17,22 @@
   (test/ui test)
   (make-stop-response))
 
-; (parameter natural)
+; (parameter (U natural 'keypress))
+; Times are in seconds.
 (define current-delirium-delay
   (make-parameter 0))
 
 ; -> void
 (define (delay-command)
   (define delay (current-delirium-delay))
-  (unless (zero? delay)
-    (printf "Delaying next command by ~a seconds.~n" delay)
-    (flush-output)
-    (sleep delay)))
+  (cond [(eq? delay 'keypress) (printf "Press ENTER to continue.")
+                               (flush-output)
+                               (read-line)]
+        [(zero? delay)         (void)]
+        [else                  (printf "Waiting for ~a seconds." delay)
+                               (flush-output)
+                               (sleep delay)
+                               (printf "~n")]))
 
 ; Responders -----------------------------------
 
@@ -141,7 +146,7 @@
 
 (provide/contract
  [test/delirium          (-> request? schemeunit-test? (-> schemeunit-test? any) response/full?)]
- [current-delirium-delay (parameter/c natural-number/c)]
+ [current-delirium-delay (parameter/c (or/c natural-number/c 'keypress))]
  [respond/expr           (-> (-> procedure? javascript-expression?) any)]
  [respond/stmt           (-> (-> procedure? javascript?) any)]
  [make-stop-response     (-> response/full?)])

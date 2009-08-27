@@ -31,7 +31,7 @@
 (define selector-tests
   (test-suite "selector.ss"
     
-    '#:before 
+    #:before 
     (lambda ()
       (open/wait
        (lambda (request)

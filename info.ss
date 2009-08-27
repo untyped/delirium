@@ -7,7 +7,8 @@
 
 (define release-notes
   '((p "Changes:")
-    (ul (li "removed Prototype.js dependency;"))))
+    (ul (li "removed Prototype.js dependency;")
+        (li "updated to SchemeUnit 3."))))
 
 (define primary-file "main.ss")
 

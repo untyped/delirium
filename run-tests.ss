@@ -6,7 +6,8 @@
 
 ; Main program body ----------------------------
 
-(serve/delirium (lambda (request)
-                  (next-dispatcher))
-                all-delirium-tests)
+(serve/delirium
+ (lambda (request)
+   (next-dispatcher))
+ all-delirium-tests)
 
