@@ -120,6 +120,12 @@ Returns the concatenated @link["http://developer.mozilla.org/en/docs/DOM:element
 @defproc[(inner-html-ref* [selected javascript-expression?]) (listof string?)]{
 Returns a list of the @link["http://developer.mozilla.org/en/docs/DOM:element.innerHTML"]{@tt{innerHTML}} properties of the @scheme[selected] nodes.}
 
+@defproc[(text-content-ref [selected javascript-expression?]) (U string? #f)]{
+Returns the concatenated @link["http://developer.mozilla.org/en/docs/DOM:element.textContent"]{@tt{textContent}} properties of the @scheme[selected] nodes, or @scheme[#f] if no nodes were selected.}
+
+@defproc[(text-content-ref* [selected javascript-expression?]) (listof string?)]{
+Returns a list of the @link["http://developer.mozilla.org/en/docs/DOM:element.textContent"]{@tt{textContent}} properties of the @scheme[selected] nodes.}
+
 @defproc[(js-ref [expr javascript-expression?]) any]{
 Returns the result of evaluating the specified Javascript expression in the browser window. Results are serialized as JSON and deserialized using Dave Herman's @italic{JSON.plt} package. Raises @scheme[exn:fail:delirium:browser] if @scheme[expr] throws a Javascript exception.}
 

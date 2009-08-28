@@ -17,6 +17,18 @@ Delirium.api.getAllInnerHTML = function (elems) {
 };
 
 // arrayOf(node) -> (U string false)
+Delirium.api.getTextContent = function (elems) {
+  var ans = Delirium.api.getAllTextContent(elems);
+  return (ans.length > 0) ? ans[0] : false;
+};
+
+// arrayOf(node) -> arrayOf(string)
+Delirium.api.getAllTextContent = function (elems) {
+  var ans = $.map(elems, function (elem) { return elem.textContent; });
+  return ans;
+};
+
+// arrayOf(node) -> (U string false)
 Delirium.api.getJQueryReference = function (elems) {
   // Delirium.log("getJQueryReference", elems);
 

@@ -32,6 +32,18 @@
         (lambda (embed-url)
           (js ((!dot Delirium api getAllInnerHTML) ,selector))))))
 
+; js -> (U string #f)
+(define (text-content-ref selector)
+  (respond/expr
+   (lambda (embed-url)
+     (js ((!dot Delirium api getTextContent) ,selector)))))
+
+; js -> (listof string)
+(define (text-content-ref* selector)
+  (respond/expr
+   (lambda (embed-url)
+     (js ((!dot Delirium api getAllTextContent) ,selector)))))
+
 ; js -> js-data
 (define (js-ref expr)
   (respond/expr
@@ -86,13 +98,15 @@
 ; Provide statements ---------------------------
 
 (provide/contract
- [url-ref          (-> string?)]
- [title-ref        (-> string?)]
- [inner-html-ref   (-> javascript-expression? (or/c string? false/c))]
- [inner-html-ref*  (-> javascript-expression? (listof string?))]
- [js-ref           (-> javascript-expression? any)]
- [jquery-path-ref  (-> javascript-expression? (or/c string? false/c))]
- [jquery-path-ref* (-> javascript-expression? (listof string?))]
- [xpath-supported? (-> boolean?)]
- [xpath-path-ref   (-> javascript-expression? (or/c string? false/c))]
- [xpath-path-ref*  (-> javascript-expression? (listof string?))])
+ [url-ref           (-> string?)]
+ [title-ref         (-> string?)]
+ [inner-html-ref    (-> javascript-expression? (or/c string? #f))]
+ [inner-html-ref*   (-> javascript-expression? (listof string?))]
+ [text-content-ref  (-> javascript-expression? (or/c string? #f))]
+ [text-content-ref* (-> javascript-expression? (listof string?))]
+ [js-ref            (-> javascript-expression? any)]
+ [jquery-path-ref   (-> javascript-expression? (or/c string? #f))]
+ [jquery-path-ref*  (-> javascript-expression? (listof string?))]
+ [xpath-supported?  (-> boolean?)]
+ [xpath-path-ref    (-> javascript-expression? (or/c string? #f))]
+ [xpath-path-ref*   (-> javascript-expression? (listof string?))])

@@ -39,6 +39,16 @@
                                                               "<a href=\"http://www.untyped.com\">Click here for awesomeness.</a>"))
       (check-equal? (inner-html-ref* (node/jquery "ul")) null))
     
+    (test-case "text-content-ref"
+      (check-equal? (text-content-ref (node/jquery "p")) "Open/wait worked.")
+      (check-equal? (text-content-ref (node/jquery "ul")) #f))
+    
+    (test-case "text-content-ref*"
+      (check-equal? (text-content-ref* (node/jquery "p")) (list "Open/wait worked."
+                                                                "Another paragraph."
+                                                                "Click here for awesomeness."))
+      (check-equal? (text-content-ref* (node/jquery "ul")) null))
+    
     (test-case "js-ref"
       (check-equal? (js-ref (js testData)) (list 1 2 3)))
     

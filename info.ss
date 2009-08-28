@@ -8,7 +8,8 @@
 (define release-notes
   '((p "Changes:")
     (ul (li "removed Prototype.js dependency;")
-        (li "updated to SchemeUnit 3."))))
+        (li "updated to SchemeUnit 3;")
+        (li "added accessors " (tt "text-content-ref") " and " (tt "text-content-ref*") "."))))
 
 (define primary-file "main.ss")
 
