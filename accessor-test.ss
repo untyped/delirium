@@ -50,7 +50,7 @@
       (check-equal? (text-content-ref* (node/jquery "ul")) null))
     
     (test-case "js-ref"
-      (check-equal? (js-ref (js testData)) (list 1 2 3)))
+      (check-equal? (js-ref testData) (list 1 2 3)))
     
     (test-case "jquery-path-ref"
       (let ([ref (jquery-path-ref (node/jquery "p"))])

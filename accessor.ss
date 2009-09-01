@@ -45,12 +45,12 @@
      (js ((!dot Delirium api getAllTextContent) ,selector)))))
 
 ; js -> js-data
-(define (js-ref expr)
+(define-syntax-rule (js-ref expr)
   (respond/expr
    (lambda (embed-url)
      (js ((function ()
             (with (!dot Delirium (getWindow))
-                  (return ,expr))))))))
+                  (return expr))))))))
 
 ; js -> (U string #f)
 (define (jquery-path-ref selector)
@@ -70,7 +70,7 @@
 ;
 ; If this function returns #f, your best bet is to use JQuery selector expressions instead.
 (define (xpath-supported?)
-  (js-ref (js (!dot Delirium xPathSupported))))
+  (js-ref (!dot Delirium xPathSupported)))
 
 ; js -> (U string #f)
 (define (xpath-path-ref selector)
@@ -97,6 +97,8 @@
 
 ; Provide statements ---------------------------
 
+(provide js-ref)
+
 (provide/contract
  [url-ref           (-> string?)]
  [title-ref         (-> string?)]
@@ -104,7 +106,6 @@
  [inner-html-ref*   (-> javascript-expression? (listof string?))]
  [text-content-ref  (-> javascript-expression? (or/c string? #f))]
  [text-content-ref* (-> javascript-expression? (listof string?))]
- [js-ref            (-> javascript-expression? any)]
  [jquery-path-ref   (-> javascript-expression? (or/c string? #f))]
  [jquery-path-ref*  (-> javascript-expression? (listof string?))]
  [xpath-supported?  (-> boolean?)]

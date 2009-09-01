@@ -74,7 +74,7 @@
                                                        (iota 3))
                                                 (input (@ [id "submit"] [name "submit"] [type "submit"])))))))))))
         (click (node/id 'box1))
-        (check-equal? (js-ref (js (!dot document (getElementById "box1") checked))) #t)
+        (check-equal? (js-ref (!dot document (getElementById "box1") checked)) #t)
         (click/wait (node/id 'submit))
         (let ([bindings (request-bindings (unbox request-box))])
           (check-false (exists-binding? 'box0 bindings) "check 1")

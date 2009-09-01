@@ -32,7 +32,7 @@ Delirium takes care of most of this Javascript stuff internally. The internal wo
 @defproc*[([(javascript-expression? [item any]) boolean?]
            [(javascript-statement? [item any]) boolean?])]
 
-The @scheme[js-ref] accessor is the only procedure which requires the programmer to have knowledge of Mirrors' Javascript language.
+@scheme[js-ref] is the only accessor which requires the programmer to have knowledge of Mirrors' Javascript language.
 
 @section{Selectors}
 
@@ -126,8 +126,8 @@ Returns the concatenated @link["http://developer.mozilla.org/en/docs/DOM:element
 @defproc[(text-content-ref* [selected javascript-expression?]) (listof string?)]{
 Returns a list of the @link["http://developer.mozilla.org/en/docs/DOM:element.textContent"]{@tt{textContent}} properties of the @scheme[selected] nodes.}
 
-@defproc[(js-ref [expr javascript-expression?]) any]{
-Returns the result of evaluating the specified Javascript expression in the browser window. Results are serialized as JSON and deserialized using Dave Herman's @italic{JSON.plt} package. Raises @scheme[exn:fail:delirium:browser] if @scheme[expr] throws a Javascript exception.}
+@defform[(js-ref js-expr)]{
+Returns the result of evaluating the Mirrors Javascript expression @scheme[js-expr] in the browser window. Results are serialized as JSON, returned to the server, and deserialized using Dave Herman's @italic{JSON.plt} package. Raises @scheme[exn:fail:delirium:browser] if @scheme[expr] throws a Javascript exception.}
 
 @defproc[(xpath-path-ref [selected javascript-expression?]) (U string? #f)]{
 Returns an XPath path that can be used as a reference for the first @scheme[selected] node. Useful for remembering the location of a node for repeated selection. Returns @scheme[#f] if no nodes were selected.
