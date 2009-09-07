@@ -3,7 +3,7 @@
 (require web-server/dispatchers/dispatch
          web-server/servlet
          web-server/servlet-env
-         (planet untyped/mirrors:1)
+         (planet untyped/mirrors:2)
          "all-delirium-tests.ss"
          "base.ss"
          "delirium.ss")
