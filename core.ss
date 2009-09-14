@@ -6,7 +6,7 @@
          (only-in srfi/13 string-pad-right)
          (prefix-in scheme: scheme/pretty)
          web-server/servlet
-         (planet untyped/mirrors:1/mirrors)
+         (planet untyped/mirrors:2)
          "base.ss"
          "json.ss")
 
@@ -128,10 +128,10 @@
 
 ; Provide statements --------------------------- 
 
-(provide (all-from-out (planet untyped/mirrors:1/mirrors))
+(provide (all-from-out (planet untyped/mirrors:2))
          ; From Web Server:
          request?
-         response?
+         response/c
          send/suspend/dispatch
          ; From Schemeunit:
          schemeunit-test?
@@ -141,8 +141,8 @@
          javascript-statement?)
 
 (provide/contract
- [test/delirium          (-> request? schemeunit-test? (-> schemeunit-test? any) response?)]
+ [test/delirium          (-> request? schemeunit-test? (-> schemeunit-test? any) response/c)]
  [current-delirium-delay (parameter/c natural-number/c)]
  [respond/expr           (-> (-> procedure? javascript-expression?) any)]
  [respond/stmt           (-> (-> procedure? javascript?) any)]
- [make-stop-response     (-> response?)])
+ [make-stop-response     (-> response/c)])
