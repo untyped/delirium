@@ -4,11 +4,11 @@
           (for-label scheme/base
                      "base.ss"))
 
-@(require (schematics-in test))
+@(require (schemeunit-in test))
 
 @title[#:tag "browser"]{Browser API}
 
-@defmodule[(planet untyped/delirium/delirium)]{
+@defmodule[(planet untyped/delirium)]{
 
 The @italic{browser API} is used to tell the web browser to do things. Procedures in the API fall into three categories:
 
@@ -65,12 +65,12 @@ Selects elements by their CSS class. Elements with multiple CSS classes are retu
 @defproc[(node/xpath [xpath string?]
                      [relative-to javascript-expression? (node/document)])
          javascript-expression?]{
-Selects nodes using an @link["http://www.w3.org/TR/xpath"]{XPath} query string.}
+Selects nodes using an @link["http://www.w3.org/TR/xpath"]{XPath} query (Firefox only).}
 
 @defproc[(node/jquery [query string?]
                       [relative-to javascript-expression? (node/document)])
          javascript-expression?]{
-Select nodes using a @link["http://jquery.com"]{jQuery} string.}
+Select nodes using a @link["http://jquery.com"]{jQuery} selector.}
 
 @defproc[(node/link/text [text string?]
                          [relative-to javascript-expression? (node/document)])

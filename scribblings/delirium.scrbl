@@ -10,8 +10,8 @@ by Dave Gurnell and Noel Welsh
 
 @tt{{dave, noel} at @link["http://www.untyped.com"]{@tt{untyped}}}
 
-Delirium is a web testing framework that integrates with
-@link[schemeunit-url]{SchemeUnit} and the PLT web server.
+Delirium is a web user interface testing framework built on top of the PLT web server and @link[schemeunit-url]{Schemeunit}.
+It lets you write Schemeunit test cases to test the user interface of your (PLT and non-PLT) web applications.
 
 @table-of-contents[]
 

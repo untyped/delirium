@@ -8,7 +8,7 @@
 
 @title[#:tag "run"]{Running Delirium}
 
-@declare-exporting[(planet untyped/delirium/delirium)]
+@declare-exporting[(planet untyped/delirium)]
 
 Delirium can be started from a top-level application or from within a servlet.
 

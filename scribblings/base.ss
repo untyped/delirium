@@ -6,6 +6,10 @@
          scribble/scheme
          scribble/struct
          scribble/urls
+         (only-in "../base.ss"
+                  mirrors-in
+                  schemeunit-in
+                  unlib-in)
          (for-label "../delirium.ss"))
 
 ; Variables ------------------------------------
@@ -17,7 +21,8 @@
 
 (provide (all-from-out scribble/eval
                        scribble/manual
-                       scribble/urls)
+                       scribble/urls
+                       "../base.ss")
          (for-label (all-from-out "../delirium.ss")))
 
 (provide/contract
