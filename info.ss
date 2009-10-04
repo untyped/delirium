@@ -9,7 +9,8 @@
   '((p "Changes:")
     (ul (li "updated to SchemeUnit 3;")
         (li "removed Prototype.js dependency;")
-        (li "added accessors " (tt "text-content-ref") " and " (tt "text-content-ref*") "."))))
+        (li "added accessors " (tt "text-content-ref") " and " (tt "text-content-ref*") ";")
+        (li (tt "js-ref") " is now a macro, allowing you to write " (tt "(js-ref expr)") " instead of " (tt "(js-ref (js expr))") "."))))
 
 (define primary-file "main.ss")
 
