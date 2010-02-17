@@ -159,4 +159,5 @@
                                 void?)]
  [make-delirium-controller (->* ((-> request? response/full?) schemeunit-test?)
                                 ((-> schemeunit-test? any))
-                                (-> request? response/full?))])
+                                (-> request? response/full?))]
+ [run-delirium             (->* (request? schemeunit-test?) (procedure?) any)])
