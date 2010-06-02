@@ -3,7 +3,7 @@
 (require (planet untyped/unlib:3/require))
 
 (define-library-aliases schemeunit (planet schematics/schemeunit:3) #:provide)
-(define-library-aliases json       (planet dherman/json:1)          #:provide)
+(define-library-aliases json       (planet dherman/json:3)          #:provide)
 (define-library-aliases mirrors    (planet untyped/mirrors:2)       #:provide)
 (define-library-aliases unlib      (planet untyped/unlib:3)         #:provide)
 
@@ -14,7 +14,7 @@
          scheme/pretty
          scheme/runtime-path
          srfi/26
-         (json-in json)
+         (json-in)
          (mirrors-in main)
          (schemeunit-in test)
          (unlib-in debug exn))
@@ -66,4 +66,4 @@
  [struct (exn:fail:browser exn:fail) ([message            string?]
                                       [continuation-marks continuation-mark-set?]
                                       [command            string?]
-                                      [result             json?])])
+                                      [result             jsexpr?])])

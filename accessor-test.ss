@@ -22,7 +22,7 @@
                                                   ,(js (var [testData (!array 1 2 3)]))))
                                     (body (p "Open/wait worked.")
                                           (p (@ [id "second-para"])
-                                             "Another " (em "paragraph") ". ")
+                                             "Another " (em "paragraph") ".")
                                           (p (a (@ [href "http://www.untyped.com"])
                                                 "Click here for awesomeness."))))))))))
     

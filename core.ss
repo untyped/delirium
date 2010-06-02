@@ -6,8 +6,8 @@
          (only-in srfi/13 string-pad-right)
          (prefix-in scheme: scheme/pretty)
          web-server/servlet
-         (mirrors-in)
-         "json.ss")
+         (json-in)
+         (mirrors-in))
 
 ; In the following type definitions:
 ;   embed-url : (request -> response) -> string
@@ -114,7 +114,7 @@
   (if (exists-binding? 'json bindings)
       (let ([json-string (extract-binding/single 'json bindings)])
         (with-handlers ([exn? (lambda (exn) (format "Could not parse JSON: ~s" json-string))])
-          (read-json (open-input-string json-string))))
+          (json->jsexpr json-string)))
       (void)))
 
 ; Contracts ------------------------------------
