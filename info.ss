@@ -7,7 +7,7 @@
 
 (define release-notes
   '((p "Changes:")
-    (ul (li "nothing as yet..."))))
+    (ul (li "updated to json.plt version 3 (from version 1.2: note that Javascript nulls are represented in Scheme as #\null instead of (void))"))))
 
 (define primary-file "main.ss")
 
