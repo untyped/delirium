@@ -3,7 +3,7 @@
 (define name "Delirium")
 
 (define blurb 
-  '((p "Acceptance testing for web applications written using the Racket HTTP Server.")))
+  '((p "Acceptance testing for Racket web applications.")))
 
 (define release-notes
   '((p "Changes:")
