@@ -3,7 +3,7 @@
 (define name "Delirium")
 
 (define blurb 
-  '((p "A tool for testing PLT web application user interfaces using Javascript remote control scripts and SchemeUnit test suites.")))
+  '((p "Acceptance testing for web applications written using the Racket HTTP Server.")))
 
 (define release-notes
   '((p "Changes:")
@@ -20,3 +20,9 @@
 (define required-core-version "4.1.3")
 
 (define repositories '("4.x"))
+
+(define compile-omit-paths
+  '("autoplanet.ss"
+    "build.ss"
+    "planet"
+    "planetdev"))
